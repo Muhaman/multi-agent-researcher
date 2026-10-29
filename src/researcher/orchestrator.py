@@ -11,6 +11,8 @@ from researcher.worker import run_worker
 
 log = structlog.get_logger()
 
+MAX_TOKENS = 16000  # thinking counts against max_tokens; leave headroom
+
 PLAN_SYSTEM = (
     "You are a research lead. Break the question into independent, non-overlapping "
     "sub-questions that can each be answered by a web search. Give each a short rationale."
@@ -35,7 +37,7 @@ async def plan(llm: Llm, question: str, budget: Budget, *, trace: Trace | None =
         prompt=f"Question: {question}\nReturn at most {budget.max_workers} sub-questions.",
         output_type=Plan,
         effort="high",
-        max_tokens=4000,
+        max_tokens=MAX_TOKENS,
     )
     if trace is not None:
         trace.record("plan", result.model, started, result.usage)
@@ -69,7 +71,7 @@ async def synthesize(
         messages=[{"role": "user", "content": prompt}],
         tools=None,
         effort="high",
-        max_tokens=16000,
+        max_tokens=MAX_TOKENS,
     )
     if trace is not None:
         trace.record("synthesize", completion.model, started, completion.usage)

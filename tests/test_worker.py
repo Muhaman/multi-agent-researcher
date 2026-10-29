@@ -33,6 +33,7 @@ async def test_collects_sources_from_search_results():
     tool = llm.calls[0]["tools"][0]
     assert tool == {"type": "web_search_20260209", "name": "web_search", "max_uses": 5}
     assert llm.calls[0]["effort"] == "medium"
+    assert llm.calls[0]["max_tokens"] == 16000
 
 
 async def test_pause_turn_is_resumed():
@@ -55,6 +56,19 @@ async def test_pause_turn_resumes_at_most_three_times():
 
     assert len(llm.calls) == 4
     assert finding.error is not None
+    assert "did not finish" in finding.error
+
+
+async def test_pause_turn_with_partial_text_is_not_a_success():
+    paused = completion(
+        [search_result_block(["https://a.example/1"]), text_block("partial")], "pause_turn"
+    )
+    llm = ScriptedLlm([paused for _ in range(4)])
+
+    finding = await run_worker(llm, SQ, Budget())
+
+    assert finding.error is not None
+    assert finding.summary == ""
 
 
 async def test_search_error_becomes_worker_error():

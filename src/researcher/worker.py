@@ -11,7 +11,7 @@ from researcher.trace import Trace
 log = structlog.get_logger()
 
 MAX_RESUMES = 3
-MAX_TOKENS = 8000
+MAX_TOKENS = 16000
 
 SYSTEM = (
     "You are a research sub-agent. Answer the sub-question using web_search. "
@@ -59,6 +59,7 @@ async def _research(llm: Llm, sq: SubQuestion, budget: Budget, trace: Trace | No
     blocks: list[Any] = []
     usage = Usage()
     model = ""
+    paused = False
 
     for _ in range(MAX_RESUMES + 1):
         completion = await llm.complete(
@@ -73,11 +74,15 @@ async def _research(llm: Llm, sq: SubQuestion, budget: Budget, trace: Trace | No
         usage += completion.usage
         model = completion.model
         if completion.stop_reason != "pause_turn":
+            paused = False
             break
+        paused = True
         messages = [first, {"role": "assistant", "content": list(blocks)}]
 
     if trace is not None:
         trace.record(f"worker:{sq.id}", model, started, usage)
+    if paused:
+        raise WorkerError(f"search did not finish after {MAX_RESUMES} resumes")
 
     summary, sources, search_error = _scan(blocks)
     if search_error and not sources:
