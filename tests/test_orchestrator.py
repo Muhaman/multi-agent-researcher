@@ -54,7 +54,7 @@ async def test_trace_records_every_step():
     report = await research("Why?", llm=FakeLlm(questions=2), budget=Budget())
 
     steps = [s.step for s in report.trace.steps]
-    assert steps == ["plan", "worker:q1", "worker:q2", "synthesize"] or (
-        steps[0] == "plan" and steps[-1] == "synthesize" and len(steps) == 4
-    )
+    assert steps[0] == "plan"
+    assert steps[-1] == "synthesize"
+    assert sorted(steps[1:-1]) == ["worker:q1", "worker:q2"]
     assert all(s.input_tokens == 10 and s.output_tokens == 5 for s in report.trace.steps)

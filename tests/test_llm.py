@@ -21,7 +21,12 @@ from researcher.models import Plan, SubQuestion
 def _client(*, create: Any = None, parse: Any = None) -> tuple[ClaudeClient, SimpleNamespace]:
     messages = SimpleNamespace(create=create or AsyncMock(), parse=parse or AsyncMock())
     sdk = SimpleNamespace(beta=SimpleNamespace(messages=messages))
-    return ClaudeClient(sdk, orchestrator_model="claude-opus-5-5", worker_model="claude-sonnet-5-5"), messages  # type: ignore[arg-type]
+    client = ClaudeClient(
+        sdk,  # type: ignore[arg-type]
+        orchestrator_model="claude-opus-5-5",
+        worker_model="claude-sonnet-5-5",
+    )
+    return client, messages
 
 
 def _response(stop_reason: str = "end_turn", parsed: Any = None) -> SimpleNamespace:
@@ -61,7 +66,11 @@ async def test_complete_sends_effort_and_fallbacks():
 async def test_unsupported_model_gets_no_fallbacks():
     messages = SimpleNamespace(create=AsyncMock(return_value=_response()), parse=AsyncMock())
     sdk = SimpleNamespace(beta=SimpleNamespace(messages=messages))
-    client = ClaudeClient(sdk, orchestrator_model="claude-haiku-5-5", worker_model="claude-haiku-5-5")  # type: ignore[arg-type]
+    client = ClaudeClient(
+        sdk,  # type: ignore[arg-type]
+        orchestrator_model="claude-haiku-5-5",
+        worker_model="claude-haiku-5-5",
+    )
 
     await _complete(client)
 
@@ -92,7 +101,12 @@ async def test_parse_returns_parsed_output():
     client, messages = _client(parse=AsyncMock(return_value=_response(parsed=plan)))
 
     result = await client.parse(
-        role="orchestrator", system="s", prompt="p", output_type=Plan, effort="high", max_tokens=100
+        role="orchestrator",
+        system="s",
+        prompt="p",
+        output_type=Plan,
+        effort="high",
+        max_tokens=100,
     )
 
     assert result.parsed == plan
@@ -106,7 +120,12 @@ async def test_parse_failure_becomes_invalid_output(failure: Exception):
 
     with pytest.raises(LlmInvalidOutputError):
         await client.parse(
-            role="orchestrator", system="s", prompt="p", output_type=Plan, effort="high", max_tokens=100
+            role="orchestrator",
+            system="s",
+            prompt="p",
+            output_type=Plan,
+            effort="high",
+            max_tokens=100,
         )
 
 
@@ -115,7 +134,12 @@ async def test_parse_with_no_parsed_output_is_invalid():
 
     with pytest.raises(LlmInvalidOutputError):
         await client.parse(
-            role="orchestrator", system="s", prompt="p", output_type=Plan, effort="high", max_tokens=100
+            role="orchestrator",
+            system="s",
+            prompt="p",
+            output_type=Plan,
+            effort="high",
+            max_tokens=100,
         )
 
 

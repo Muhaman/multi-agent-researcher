@@ -71,7 +71,9 @@ class FakeLlm:
         )
         return Parsed(model="fake-orchestrator", usage=USAGE, parsed=plan)
 
-    async def complete(self, *, messages: list[dict[str, Any]], tools: Any = None, **_: Any) -> Completion:
+    async def complete(
+        self, *, messages: list[dict[str, Any]], tools: Any = None, **_: Any
+    ) -> Completion:
         prompt = str(messages[0]["content"])
         if not tools:
             self.synthesis_prompts.append(prompt)
