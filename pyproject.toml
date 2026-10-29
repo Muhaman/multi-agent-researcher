@@ -1,0 +1,49 @@
+[build-system]
+requires = ["hatchling>=1.33.0"]
+build-backend = "hatchling.build"
+
+[project]
+name = "multi-agent-researcher"
+version = "0.1.0"
+description = "Orchestrator + parallel web-search sub-agents that produce cited research reports."
+readme = "README.md"
+requires-python = ">=3.12"
+license = { text = "MIT" }
+dependencies = [
+  "anthropic>=2.3.0,<3",
+  "pydantic>=2.14.0,<3",
+  "structlog>=26.1.0,<27",
+  "typer>=0.27.0,<1",
+]
+
+[project.scripts]
+research = "researcher.cli:app"
+
+[dependency-groups]
+dev = [
+  "mypy>=2.4.0,<3",
+  "pytest>=9.2.0,<10",
+  "pytest-asyncio>=1.4.0,<2",
+  "ruff>=0.17.0,<1",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/researcher"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+src = ["src", "."]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "SIM", "RUF"]
+
+[tool.mypy]
+strict = true
+python_version = "3.12"
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+pythonpath = ["."]
+testpaths = ["tests"]
