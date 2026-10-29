@@ -165,10 +165,11 @@ class ClaudeClient:
         max_tokens: int,
     ) -> Completion:
         request = self._base_request(role, system, effort, max_tokens)
+        request["messages"] = messages
         if tools:
             request["tools"] = tools
         try:
-            response: Any = await self._client.beta.messages.create(**request, messages=messages)
+            response: Any = await self._client.beta.messages.create(**request)
         except anthropic.APIError as exc:
             raise LlmUpstreamError(str(exc)) from exc
         _check_stop_reason(response.stop_reason)
