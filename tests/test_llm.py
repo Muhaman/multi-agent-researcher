@@ -3,7 +3,7 @@ from typing import Any
 from unittest.mock import AsyncMock
 
 import anthropic
-import httpx
+import httpx2
 import pytest
 
 from researcher.llm import (
@@ -89,7 +89,7 @@ async def test_bad_stop_reason_raises_typed_error(stop_reason: str, error: type[
 
 
 async def test_api_error_becomes_upstream_error():
-    exc = anthropic.APIConnectionError(request=httpx.Request("POST", "https://example.com"))
+    exc = anthropic.APIConnectionError(request=httpx2.Request("POST", "https://example.com"))
     client, _ = _client(create=AsyncMock(side_effect=exc))
 
     with pytest.raises(LlmUpstreamError):
