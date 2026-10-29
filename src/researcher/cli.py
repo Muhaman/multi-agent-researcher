@@ -23,7 +23,8 @@ def _configure_logging() -> None:
             structlog.processors.TimeStamper(fmt="iso"),
             structlog.processors.JSONRenderer(),
         ],
-        logger_factory=structlog.PrintLoggerFactory(file=sys.stderr),
+        # Resolve sys.stderr per call so a swapped/closed stream is never held onto.
+        logger_factory=lambda *_: structlog.PrintLogger(file=sys.stderr),
     )
 
 
